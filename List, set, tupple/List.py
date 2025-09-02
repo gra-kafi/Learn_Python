@@ -26,3 +26,6 @@ for x in fruits:
 
 # print(help(fruits)) #find everything in fruits 
 # print(dir(fruits))
+
+mixed = [1, "hello", 3.5, True]
+print(mixed[-1])
