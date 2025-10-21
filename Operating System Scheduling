@@ -1,0 +1,170 @@
+#ID: 011 223 0876
+#Name: Gazi Rafat Al Kafi
+
+num_of_process = int(input("Enter the number of process:"))
+arrival_time =  []
+burst_time = []
+time_quantum = 0
+current_time = 0
+total_tat = 0
+total_wt = 0
+completed = 0
+done = [False] * num_of_process
+
+print("---------------------------------------------------------------------------")
+
+for i in range(num_of_process):
+    at = int(input("Enter arival time of process " + str(i+1) + ": "))
+    bt = int(input("Enter the brust time of process" + str(i+1) + ": "))
+    arrival_time.append(at)
+    burst_time.append(bt)
+
+processes = list(zip(range(1, num_of_process + 1), arrival_time, burst_time))
+
+
+print("---------------------------------------------------------------------------")
+print("-----------------------------Menu------------------------------------------")
+print("---------------------------------------------------------------------------")
+print("Select which scheduling you wanna use: ")
+print("1. FCFS")
+print("2. SJF (Non-Preemptive)")
+print("3. SRTF (Preemptive SJF)")
+print("4. Round robin")
+print("---------------------------------------------------------------------------")
+
+select = int(input())
+
+if (select == 1):
+    print("FCFS selected")
+if (select == 2):
+    print("SJF selected")
+if (select == 3):
+    print("SRTF selected")
+if (select == 4):
+    print("Robin Round selected")
+    time_quantum = int(input("Enter Time Quantum for Robin Round: "))
+
+print("---------------------------------------------------------------------------")
+
+if(select == 1):
+    processes.sort(key=lambda x: x[1])
+
+    print("Pid\tAt\tBt\tCt\ttat\twt")
+    for pid, at, bt in processes:
+        if current_time < at:
+            current_time = at
+        ct = current_time + bt
+        tat = ct - at
+        wt = tat - bt
+        current_time = ct
+
+        total_tat += tat
+        total_wt += wt
+
+        print(f"{pid}\t{at}\t{bt}\t{ct}\t{tat}\t{wt}")
+
+    print(f"\nAverage Turnaround Time: {total_tat / num_of_process:.2f}")
+    print(f"Average Waiting Time: {total_wt / num_of_process:.2f}")
+    print("---------------------------------------------------------------------------")
+
+if (select==2):
+
+    print("PID\tAT\tBT\tCT\tTAT\tWT")
+
+    while completed < num_of_process:
+        shortest = -1
+        for i in range(num_of_process):
+            if arrival_time[i] <= current_time and not done[i]:
+                if shortest == -1 or burst_time[i] < burst_time[shortest]:
+                    shortest = i
+
+        if shortest == -1:
+            current_time += 1
+            continue
+
+        current_time += burst_time[shortest]
+        ct = current_time
+        tat = ct - arrival_time[shortest]
+        wt = tat - burst_time[shortest]
+
+        done[shortest] = True
+        completed += 1
+        total_tat += tat
+        total_wt += wt
+
+        print(f"{shortest+1}\t{arrival_time[shortest]}\t{burst_time[shortest]}\t{ct}\t{tat}\t{wt}")
+
+    print(f"\nAverage Turnaround Time: {total_tat / num_of_process:.2f}")
+    print(f"Average Waiting Time: {total_wt / num_of_process:.2f}")
+    print("---------------------------------------------------------------------------")
+
+
+
+elif (select == 3):
+    
+    print("PID\tAT\tBT\tCT\tTAT\tWT")
+
+    remaining_bt = burst_time.copy()
+    done = [False] * num_of_process
+    completed = 0
+    current_time = 0
+    total_tat = 0
+    total_wt = 0
+
+    while completed < num_of_process:
+        shortest = -1
+        for i in range(num_of_process):
+            if arrival_time[i] <= current_time and not done[i]:
+                if shortest == -1 or remaining_bt[i] < remaining_bt[shortest]:
+                    shortest = i
+
+        if shortest == -1:
+            current_time += 1
+            continue
+
+        remaining_bt[shortest] -= 1
+        current_time += 1
+
+        if remaining_bt[shortest] == 0:
+            done[shortest] = True
+            completed += 1
+            ct = current_time
+            tat = ct - arrival_time[shortest]
+            wt = tat - burst_time[shortest]
+            total_tat += tat
+            total_wt += wt
+            print(f"{shortest+1}\t{arrival_time[shortest]}\t{burst_time[shortest]}\t{ct}\t{tat}\t{wt}")
+
+    print(f"\nAverage Turnaround Time: {total_tat / num_of_process:.2f}")
+    print(f"Average Waiting Time: {total_wt / num_of_process:.2f}")
+    print("---------------------------------------------------------------------------")
+
+
+elif select == 4:
+    print("PID\tAT\tBT\tCT\tTAT\tWT")
+    remaining_bt = burst_time.copy()
+
+    while completed < num_of_process:
+        done_in_this_round = False
+        for i in range(num_of_process):
+            if arrival_time[i] <= current_time and remaining_bt[i] > 0:
+                exec_time = min(time_quantum, remaining_bt[i])
+                remaining_bt[i] -= exec_time
+                current_time += exec_time
+                done_in_this_round = True
+
+                if remaining_bt[i] == 0:
+                    ct = current_time
+                    tat = ct - arrival_time[i]
+                    wt = tat - burst_time[i]
+                    total_tat += tat
+                    total_wt += wt
+                    completed += 1
+                    print(f"{i+1}\t{arrival_time[i]}\t{burst_time[i]}\t{ct}\t{tat}\t{wt}")
+
+        if not done_in_this_round:
+            current_time += 1
+
+    print(f"\nAverage Turnaround Time: {total_tat/num_of_process:.2f}")
+    print(f"Average Waiting Time: {total_wt/num_of_process:.2f}")
+    print("---------------------------------------------------------------------------")
